@@ -1,5 +1,5 @@
-# image2textclipboard
-Performs OCR on image screenshot and copy it to clipboard using Python
+# Screenshot2text
+Performs OCR on image screenshot (Windows + Shift + S) and copy it to clipboard using Python
 
 ## Technology
 The application make use of `PIL` and `pytesseract`. Please install whatever necessary.
