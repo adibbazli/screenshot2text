@@ -39,22 +39,33 @@ def ocr_image(image):
     image = image.convert("RGB")
 
     # Use pytesseract to perform OCR on the image
-    text = pytesseract.image_to_string(image)
+    text = pytesseract.image_to_string(image, lang='jpn_vert')
 
     return text
 
 def set_clipboard_text(text):
-    # Open the clipboard for writing
-    win32clipboard.OpenClipboard()
+	try:
+		# Open the clipboard for writing
+		win32clipboard.OpenClipboard()
 
-    # Clear the clipboard content
-    win32clipboard.EmptyClipboard()
+		# Clear the clipboard content
+		win32clipboard.EmptyClipboard()
 
-    # Set the clipboard data as text
-    win32clipboard.SetClipboardText(text)
+		# Set the clipboard data as text
+		win32clipboard.SetClipboardText(text, win32clipboard.CF_UNICODETEXT)
 
-    # Close the clipboard
-    win32clipboard.CloseClipboard()
+		# Close the clipboard
+		win32clipboard.CloseClipboard()
+
+	except pywintypes.error as e:
+		if e.args[0] == 5:  # Check if the error code is 5 (Access is denied)
+			print("Access is denied.") # . Waiting for 1 second and attempting again.")
+			time.sleep(1)
+			# Retry the operation
+			# set_clipboard_text()
+		else:
+			# Handle other pywintypes errors
+			print(f"Unexpected Error: {e}")
 
 if __name__ == "__main__":
     previous_hash = None
@@ -76,13 +87,18 @@ if __name__ == "__main__":
                 text_result = ocr_image(image)
                 print("OCR Result:")
                 print(text_result)
+				
+                if text_result:
+                    # Set the clipboard to the OCR result
+					
+                    text_without_whitespace = text_result.replace(" ", "")
+                    set_clipboard_text(text_without_whitespace)
+                    print("Clipboard set to OCR result.")
+                else:
+                    print("Result empty, Clipboard not set")
 
-                # Set the clipboard to the OCR result
-                set_clipboard_text(text_result)
-                print("Clipboard set to OCR result.")
-
-            print("Sleeping for 0.1 seconds.")
-            time.sleep(0.1)
+            # print("Sleeping for 0.1 seconds.")
+            # time.sleep(0.1)
         else:
             print("Clipboard does not contain an image.")
 
